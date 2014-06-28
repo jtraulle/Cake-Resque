@@ -9,17 +9,17 @@
 	<li><a href="/fr/#resources">Ressources</a></li>
 	<li><a href="/fr/#support">Support</a></li>
 	<li><a href="/fr/#author">Auteur</a></li>
-	<li><a href="/fr/#changelog">Changelog</a></li>
+	<li><a href="/fr/#changelog">Notes de versions</a></li>
 	<li><a href="/fr/#licence">Licence</a></li>
 
 
 	<li class="divider"></li>
-	<li class="nav-header"><a href="/fr/usage"><i class="icon-book"></i> Usage</a></li>
+	<li class="nav-header"><a href="/fr/usage"><i class="icon-book"></i> Utilisation</a></li>
 
-	<li><a href="/fr/usage#workers">Gestion des workers</a></li>
-	<li><a href="/fr/usage#jobs">Creation des classes job</a></li>
-	<li><a href="/fr/usage#queueing">Mettre un job en queue</a></li>
-	<li><a href="/fr/usage#scheduling">Programmer un job</a></li>
+	<li><a href="/fr/usage#workers">Gérer les workers</a></li>
+	<li><a href="/fr/usage#jobs">Créer des classes de jobs</a></li>
+	<li><a href="/fr/usage#queueing">Mettre en file des jobs</a></li>
+	<li><a href="/fr/usage#scheduling">Planifier des jobs</a></li>
 	<li><a href="/fr/usage#logging">Journalisation</a></li>
 
 

@@ -1,7 +1,5 @@
-<div class="alert"><b>ATTENTION</b><br/> Cette page n'est pas encore entierement traduite en francais. <a href="https://github.com/kamisama/Cake-Resque/blob/master/CONTRIBUTING.md">Aidez-nous a la traduire</a>.</div>
-
 <div class="hero-unit headline">
-<dfn>CakeResque</dfn> est un plugin CakePHP pour créer des taches en arriere plan qui peuvent etre executée hors ligne plus tard.
+<dfn>CakeResque</dfn> est un plugin CakePHP pour créer des tâches en arrière plan qui peuvent être exécutées hors-ligne plus tard.
 </div>
 
 <div class="pull-right">
@@ -17,87 +15,88 @@ allowtransparency="true" frameborder="0" scrolling="0" width="95" height="20"></
 
 ## Introduction {#introduction}
 
-The main goal is to delay some nonessential tasks to later, reducing the waiting time for the user.
+Le but principal est de remettre à plus tard certaines tâches non-essentielles, ce qui permet de réduire le temps d'attente de l'utilisateur.
 
-## La realite
+## La réalité
 
-<img src="/img/workflow1.jpg" class="pull-right" alt="Classic worflow" title="Classic worflow" width=361 height=615/>
-Let's say a lambda user wants to update his location, and your website has some pretty neat social features centered around the user. 
+<img src="/img/workflow1.jpg" class="pull-right" alt="Processus classique" title="Processus classique" width=361 height=615/>
+Disons qu'un utilisateur veut mettre à jour sa position, et que votre site a des fonctionnalités sociales avancées centrées autour de l'utilisateur.
 
-Main workflow for the *update location* action :
+Processus principal pour l'action de *mise à jour de la position* :
 
-1. 	*Update the user's location* in the users table (or whatever, depending on your structure)  
-	-> took 0.2s
-2.	*Refresh various cache*  
-	-> took 0.1s
-3. 	*Send mails*  
-	-> took 0.7s	
-4.	*Send some notifications* to all your friends  
-	-> took 3.7s
-5. 	*Recommend some new friends* around your new location  
-	-> took 2s
+1. 	*Mettre à jour la position de l'utilisateur* dans la table des utilisateurs (où ailleurs, cela dépend de votre structure)  
+	-> prend 0,2s
+2.	*Regénérer différents caches*  
+	-> prend 0,1s
+3. 	*Envoyer des courriels*  
+	-> prend 0,7s	
+4.	*Envoyer des notifications* à tous vos amis   
+	-> prend 3,7s
+5. 	*Recommander de nouveaux amis* près de votre nouvelle position  
+	-> prend 2s
 	
-**Total time** : 3.7 seconds
+**Temps total** : 3,7 secondes
 
-Your mileage may vary, but what to remember here is that the important stuff takes just a fraction of the total processing time.
+Vos successions peuvent varier mais ce que vous dever retenir ici, c'est que les choses importantes ne prennent qu'une fraction du temps total de traitement.
 
-## Le probleme
+## Le problème
 
-But the user doesn't sadly care about all of these stuffs, and just want to update his location.
+Mais l'utilisateur ne se soucie pas de toutes ces étapes, et veut juste mettre à jour son emplacement.
 
-Why should the user wait for the cache refresh ? It does not matter at all if it refreshed or not in the final response return to the user.
+Pourquoi l'utilisateur devrait-il attendre le rafraîchissement du cache ? Ce n'est pas grave du tout si le cache n'est pas rafraichi avant que nous renvoyons une réponse à l'utilisateur.
 
-And what will happen if there's an error while refreshing the cache ?  
+Et qu'arrivera t'il si une erreur survient lors du rafraîchissement du cache ?  
 
-* Answer A : It crashes the application <small>(you should review your code …)</small>  
-* Answer B : Ignore it, and continue <small>(who will do it then ?)</small>
+* Réponse A : Cela plante votre application <small>(vous devriez revoir votre code …)</small>  
+* Réponse B : Ignorer cela, et continuer <small>(qui le fera alors ?)</small>
 
-The problem here is that there're some actions in the main workflow that :
+Le problème ici est qu'il y a certaines actions dans le processus principal qui :
 
-* are not required to be executed immediately 
-* are prone to errors, and could take down your entire application
-* can take time to process, thus slowing the total processing time
-* can cost system resources
+* ne nécessitent pas une exécution immédiate
+* sont susceptibles de générer des erreurs, qui peuvent mettre hors ligne la totalité de votre application
+* peuvent prendre du temps à s'exécuter, donc ralentir le temps total d'exécution
+* peuvent coûter des ressources système
 
 ## La solution
 
-**User should just wait 0.2s instead of 3.7s**
+**L'utilisateur devrait simplement attendre 0,2s au lieu de 3,7s**
 
-A response should be returned immediately after the first point, and *delay all the other tasks for later, out of the main workflow*. That way, "unimportant" tasks doesn't affect the main workflow.
+Une réponse devrait-être retournée immédiatement après le premier point, et *l'ensemble des autres tâches devraient être différées pour une exécution ultérieure, en dehors du processus principal*. Ce cette façon, les tâches "non essentielles" n'affectent pas le processus principal.
 
-The trick is to tell someone else to do it.
+L'astuce est de dire à quelqu'un d'autre de le faire.
 
 <img src="/img/workflow2.jpg" alt="Worflow with background jobs"  title="Worflow with background jobs" width=676 height=567/>
 
-Here come the background jobs. 
+C'est ici qu'interviennent les tâches de fond.
 
-Instead of executing the task, we convert it into a *job*, then put it in a *queue*. A *worker*, which is running on another php process, will poll that queue and execute the job.
+Au lieu d'exécuter la tâche, nous la convertissons en *job* (travail), puis nous le plaçons dans une *queue* (file). Un *worker* (travailleur) qui s'exécute dans un autre processus php, viendra piocher dans cette file et exécuter le travail.
+Instead of executing the task, we convert it into a *job*, then put it in a *queue*. A *worker*, which is running on another php process, 
 
-That queue system is based on Resque. CakeResque is just wrapper of Resque for CakePHP.
+Ce système de files est basé sur Resque. CakeResque est simplement une ensapsulation de Resque pour CakePHP.
 
-> Resque (pronounced like "rescue") is a Redis-backed library for creating background jobs,
-> placing those jobs on multiple queues, and processing them later.
+> Resque (prononcer comme "rescue" [en]) est une librairie basée sur Redis pour créer des tâches de fond,
+> en placant ces tâches dans plusieurs files, pour les traiter plus tard.
 
-<div class="alert alert-info"><i class="icon-book"></i> Read the <a href="https://github.com/defunkt/resque">Resque</a> official page for more details about background jobs, workers and queues.</div>
+<div class="alert alert-info"><i class="icon-book"></i> Lisez la page officielle de <a href="https://github.com/defunkt/resque">Resque</a> [en] pour plus de détails à propos des tâches de fond, des travailleurs et des files.</div>
 
 
 
 
 <div class="hero-unit">
-Now head to the <a href="/install" class="btn btn-info">installation guide</a><br/> then proceed to the <a href="/usage" class="btn btn-success">usage documentation</a>
+Maintenant, dirigez vous vers le <a href="/install" class="btn btn-info">guide d'installation</a><br/> puis poursuivez avec le <a href="/usage" class="btn btn-success">guide d'utilisation</a>
 </div>
 
 
 ## Ressources {#resources}
 
 * 	[Page officielle de Resque](https://github.com/defunkt/resque)
-* 	[Php-Resque : Port vers PHP de Resque](https://github.com/chrisboulton/php-resque)
+* 	[php-resque : portage vers PHP de Resque (originellement en Ruby)](https://github.com/chrisboulton/php-resque)
 * 	[Serie of 9 tutorials explaining the mechanic behind backgound jobs](http://www.kamisama.me/2012/10/09/background-jobs-with-php-and-resque-part-1-introduction/)
 
 
 ## Support {#support}
 
-Tout le support, les soumissions de bogues, ainsi que les propositions de nouvelles fonctionnalites se ont sur <a href="https://github.com/kamisama/Cake-Resque/issues">Github</a>.
+Le support, les rapports d'anomalies, et les propositions de nouvelles fonctionnalités se font sur <a href="https://github.com/kamisama/Cake-Resque/issues">Github</a>.
 
 
 ## Auteur {#author}
@@ -110,9 +109,9 @@ Wan Qi Chen
 * Google+ : [Google+](https://plus.google.com/116246394244628198627?rel=author)
 
 
-## Changelog {#changelog}
+## Notes de versions {#changelog}
 
-Voir [le changelog ici](https://github.com/kamisama/Cake-Resque/blob/master/CHANGELOG.md)
+Voir [les notes de verisons ici](https://github.com/kamisama/Cake-Resque/blob/master/CHANGELOG.md)
 
 ## Licence {#licence}
 
